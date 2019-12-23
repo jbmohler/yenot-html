@@ -1,0 +1,101 @@
+<html>
+<head>
+    <title>lms Login</title>
+    <!-- <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
+    <link href="/static/pinpad.css" rel="stylesheet" />
+	<script
+		src="https://code.jquery.com/jquery-3.3.1.min.js"
+		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+		crossorigin="anonymous"></script>
+    <script src="/static/rtx.js"></script>
+    <script src="/static/pinpad.js"></script>
+	<script>
+		var session = null;
+		$(document).ready(function() {
+			var u2 = window.location.href;
+			u2 = u2.replace(/login.html$/, '');
+			session = RtxServer(u2);
+		});
+
+		function transform_to_pin(){
+			$("#credentials").hide();
+			$("#confirmation").show();
+		}
+
+		function authenticate(){
+			alert("it works");
+			window.location = "/application.html";
+		}
+
+		function my_login(){
+			if( session.step2fa ){
+				session.promote_2fa(
+						$("#pin2").val(),
+						authenticate);
+			}else{
+				session.login_pin(
+						$("#username").val(), 
+						$("#pin").val(),
+						transform_to_pin);
+			}
+			return false;
+		}
+	</script>
+</head>
+<body>
+<div class="banner">lms Login</div>
+
+<div class="auth">
+
+<form action="/dne" onsubmit="return my_login();">
+    <table id='credentials'>
+    <tr>
+        <td>Username:</td>
+        <td><input type="text" id="username" name="username" /></td>
+    </tr>
+    <tr>
+        <td>PIN:</td>
+        <td><input type="password" id="pin" name="pin" /></td>
+        <td><input type="submit" value="Login" /></td>
+    </tr>
+    </table>
+    <table id='confirmation' hidden>
+    <tr>
+        <td>Confirmation PIN:</td>
+        <td><input type="password" id="pin2" name="pin" /></td>
+        <td><input type="submit" value="Login" /></td>
+    </tr>
+    </table>
+    <div id="phone"> 
+        <div id="wrapper">    
+            <div class="key" rel="1">1</div>
+            <div class="key" rel="2">2<span>abc</span></div>
+            <div class="key" rel="3">3<span>def</span></div>
+            <div class="clear"></div>
+            <div class="key" rel="4">4<span>ghi</span></div>
+            <div class="key" rel="5">5<span>jkl</span></div>
+            <div class="key" rel="6">6<span>mno</span></div>
+            <div class="clear"></div>
+            <div class="key" rel="7">7<span>pqrs</span></div>
+            <div class="key" rel="8">8<span>tuv</span></div>
+            <div class="key" rel="9">9<span>wxyz</span></div>
+            <div class="clear"></div>
+            <div class="key special" rel="*">*</div>
+            <div class="key" rel="1">0<span>oper</span></div>
+            <div class="key special" rel="#">#</div>
+            <div class="clear"></div>
+        </div>
+    </div>
+</form>
+</div>
+
+<div class="diag">
+<h2>Diagnostics</h2>
+
+<p>The <a href="/api/ping">ping endpoint</a> is not authenticated and is useful for
+establishing basic connectivity and latency checks.</p>
+</div>
+
+</body>
+</html>
+

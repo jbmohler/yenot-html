@@ -1,6 +1,20 @@
 // Rtx jquery client
 //
 
+function titleCase(str) {
+	  return str.toLowerCase().split(' ').map(function(word) {
+		      return word.replace(word[0], word[0].toUpperCase());
+		    }).join(' ');
+}
+
+function rtx_column_label(prelt)
+{
+	if( prelt[1].label !== undefined )
+		return prelt[1].label;
+	else
+		return titleCase(prelt[0].replace('_', ' '));
+}
+
 function rtx_table_helper(cols, rows)
 {
 	var colcount = cols.length;
@@ -33,22 +47,35 @@ function rtx_exception_response(xmlhttp, method, default_text)
 	throw new Error(xmlhttp.Status, 'Status ' + xmlhttp.Status + ' on method ' + method + '.\n' + default_text);
 }
 
-function RtxResponse(rtext)
+function RtxResponse(content)
 {
-	eval('r='+rtext);
-	this.payload = r;
+	this.payload = content;
 
 	this.main_table = function()
 	{
-		cols = this.payload[1];
-		rows = this.payload[2];
-		return rtx_table_helper(cols, rows);
+		return this.table(this.payload['__main_table__']);
 	}
 
 	this.table = function(name)
 	{
-		t = this.payload[0][name];
+		t = this.payload[name];
 		return rtx_table_helper(t[0], t[1]);
+	}
+
+	this.main_table_columns = function()
+	{
+		return this.table_columns(this.payload['__main_table__']);
+	}
+
+	this.table_columns = function(name)
+	{
+		t = this.payload[name];
+		return t[0];
+	}
+
+	this.keys = function()
+	{
+		return this.payload;
 	}
 
 	return this;
@@ -68,6 +95,8 @@ function RtxServer(baseurl)
 		function login_response(data, textStatus, jqXHR){
 			if( jqXHR.status == 200 ){
 				_this.sid = data.session;
+				$.cookie("rtx_prefix", _this.baseurl, {path: '/'});
+				$.cookie("rtx_sid", data.session, {path: '/'});
 				success();
 			}else{
 				alert(data.status);
@@ -131,24 +160,24 @@ function RtxServer(baseurl)
 
 	this.get = function(tail, params, rtx_success, rtx_error){
 
-		var index = 0;
-		var pstr = '';
-		for( var key in params )
-		{
-			if(index == 0)
-				pstr += '?';
-			else
-				pstr += '&';
-			pstr += key+'='+params[key];
-			index += 1;
+		function get_result(data, textStatus, jqXHR){
+			if( jqXHR.status == 200 ){
+				rtx_success(RtxResponse(data));
+			}else{
+				rtx_error(RtxResponse(data));
+			}
 		}
 
-		xmlhttp.open('get', this.baseurl+tail+pstr, false);
-		xmlhttp.setRequestHeader('X-Yenot-SessionID', this.sid);
-		xmlhttp.send();
-		if( xmlhttp.Status != 200 )
-			rtx_exception_response(xmlhttp, 'GET', 'error reading data');
-		return RtxResponse(xmlhttp.responseText).main_table();
+		$.ajax({
+			type: 'GET',
+			url: this.baseurl+tail,
+			data: params,
+			headers: {'X-Yenot-SessionID': this.sid},
+			success: get_result,
+			error: rtx_error})
+		//if( xmlhttp.Status != 200 )
+		//	rtx_exception_response(xmlhttp, 'GET', 'error reading data');
+		//rtx_success(RtxResponse(xmlhttp.responseText));
 	}
 
 	this.put = function(tail, params)
@@ -170,7 +199,7 @@ function RtxServer(baseurl)
 		xmlhttp.send()
 		if( xmlhttp.Status > 211 ) // accomodate login session call
 			rtx_exception_response(xmlhttp, 'PUT', 'error saving data');
-		return
+		return RtxResponse(xmlhttp.responseText);
 	}
 
 	this.post = function(tail, params)

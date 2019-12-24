@@ -1,0 +1,30 @@
+.banner {
+	padding: 24px;
+	height: 50px;
+	font-size: 25px;
+	background: #9bbc88;
+	width: 100%;
+	margin: 0px;
+}
+
+.auth {
+	margin: auto;
+	width: 350px;
+}
+
+.reports {
+	float: left;
+	width: 250px;
+	// border-style: solid;
+}
+
+.preview {
+	// float: right;
+	// border-style: solid;
+}
+
+.diag {
+	clear: both;
+}
+
+

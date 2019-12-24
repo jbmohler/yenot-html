@@ -1,0 +1,157 @@
+<html>
+<head>
+    <title>lms</title>
+    <!-- <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
+    <link href="/static/lmsapp.css" rel="stylesheet" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.4.12/jqtree.css" rel="stylesheet" />
+	<script
+		src="https://code.jquery.com/jquery-3.3.1.min.js"
+		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+		crossorigin="anonymous"></script>
+	<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
+	></script>
+	<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.4.12/tree.jquery.js"
+	></script>
+	<link type="text/css" rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css"
+	/>
+	<link type="text/css" rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css"
+	/>
+	 
+	<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+
+    <script src="/static/rtx.js"></script>
+	<script>
+		var session = null;
+		$(document).ready(function() {
+			session = RtxServer($.cookie("rtx_prefix"));
+			session.sid = $.cookie("rtx_sid");
+			session.get("api/user/logged-in/reports", null, load_reports);
+		});
+
+		function load_reports(response){
+			var rptlist = response.main_table();
+			//alert(JSON.stringify(rptlist[0], null, 4));
+			rptlist.sort(function(a, b){
+				if( a.role_sort < b.role_sort )
+					return -1;
+				if( a.role_sort == b.role_sort && a.description <= b.description )
+					return -1;
+				if( a.role_sort == b.role_sort && a.description > b.description )
+					return +1;
+				if( a.role_sort > b.role_sort )
+					return +1;
+				return 0;
+			});
+			var data = [];
+			rptlist.forEach(function (a){
+				if( data.length == 0 || data[data.length-1].name != a.role )
+				{
+					data.push({
+						name: a.role, 
+						item: a, 
+						children: []});
+				}
+				child = {name: a.description, item: a};
+				// console.log(a.role + " >> " + a.description);
+				data[data.length-1].children.push(child);
+			});
+
+			var $tree = $("#rpttree");
+			$tree.tree({data: data, autoOpen: true});
+
+			$tree.on( 'tree.click', rpt_node_select);
+		}
+
+		function rpt_node_select(e) {
+			// Disable single selection
+			e.preventDefault();
+			var selrpt = e.node.item;
+			//alert(JSON.stringify(selrpt, null, 4));
+			//alert(selected_node.item.url);
+
+			var prompts = selrpt.prompts;
+			var inputs = prompts.map(function (p){
+				var x = "<label>"+rtx_column_label(p)+": </label>";
+				x += "<input id=\"preview_prompts_"+p[0]+"\" />";
+				x += "<br />";
+				return x;
+			});
+
+			var pvpro = $("#preview-prompts");
+			pvpro.empty();
+			inputs.forEach(function (ii) {pvpro.append(ii)});
+
+			run_report(selrpt);
+		}
+
+		function run_report(selrpt){
+			session.get(selrpt.url, null, load_report);
+		}
+
+		function load_report(content){
+			var grid = $("#preview-grid");
+
+			var columns = content.main_table_columns();
+			var table = content.main_table();
+
+			function gtype(cc)
+			{
+				if( cc[1] !== null && cc[1].type !== undefined )
+				{
+					var tt = cc[1].type;
+					if( tt == "boolean" )
+						return "checkbox";
+					if( tt == "intger" )
+						return "number";
+				}
+				return "text";
+			}
+
+			var grcol = columns.filter(function (cc){
+				return cc[1] === null || cc[1].type === undefined || !cc[1].type.endsWith('.surrogate');
+			}).map(function (cc){
+				return {
+					name: cc[0],
+					title: rtx_column_label(cc),
+					type: gtype(cc)};
+			});
+
+			grid.jsGrid({
+				width: "60%",
+				sorting: "true",
+				data: table,
+				fields: grcol
+			});
+		}
+	</script>
+</head>
+<body>
+<div class="banner">lms</div>
+
+<div class="reports">
+	<h3>Reports</h3>
+	<div id="rpttree">
+	</div>
+</div>
+
+<div class="preview">
+	<div id="preview-prompts">
+	</div>
+	<div id="preview-grid">
+	</div>
+</div>
+
+<div class="diag">
+<h2>Diagnostics</h2>
+
+<p>The <a href="/api/ping">ping endpoint</a> is not authenticated and is useful for
+establishing basic connectivity and latency checks.</p>
+</div>
+
+</body>
+</html>

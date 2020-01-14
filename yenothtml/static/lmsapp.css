@@ -1,9 +1,12 @@
 .banner {
 	padding: 24px;
 	height: 50px;
-	font-size: 25px;
 	background: #9bbc88;
 	width: 100%;
+	margin: 0px;
+}
+
+body {
 	margin: 0px;
 }
 
@@ -26,5 +29,3 @@
 .diag {
 	clear: both;
 }
-
-

@@ -26,6 +26,16 @@ def static():
     global STATIC_ROOT
     return static_file('application.html', root=STATIC_ROOT)
 
+@app.get('/contacts.html', name='contacts_html', skip=['yenot-auth'])
+def static():
+    global STATIC_ROOT
+    return static_file('contacts.html', root=STATIC_ROOT)
+
+@app.get('/finances.html', name='finances_html', skip=['yenot-auth'])
+def static():
+    global STATIC_ROOT
+    return static_file('finances.html', root=STATIC_ROOT)
+
 @app.route('/static/<path:path>', name='static', skip=['yenot-auth'])
 def static(path):
     global STATIC_ROOT

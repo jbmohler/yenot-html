@@ -15,6 +15,40 @@ function rtx_column_label(prelt)
 		return titleCase(prelt[0].replace('_', ' '));
 }
 
+function jsGrid_columns(columns)
+{
+	function listconcat(value, item){
+		return value.join('; ');
+	}
+	function gtype(cc)
+	{
+		if( cc[1] !== null && cc[1].type !== undefined )
+		{
+			var tt = cc[1].type;
+			if( tt == "boolean" )
+				return {"type": "checkbox"};
+			if( tt == "integer" )
+				return {"type": "number"};
+			if( tt == "stringlist" )
+				return {"type": "text", itemTemplate: listconcat}
+		}
+		return {"type": "text"}
+	}
+
+	var grcol = columns.filter(function (cc){
+		return cc[1] === null || cc[1].type === undefined || !cc[1].type.endsWith('.surrogate');
+	}).map(function (cc){
+		var gt = gtype(cc);
+		return {
+			name: cc[0],
+			title: rtx_column_label(cc),
+			type: gt.type,
+			itemTemplate: gt.itemTemplate
+		};
+	});
+	return grcol;
+}
+
 function rtx_table_helper(cols, rows)
 {
 	var colcount = cols.length;
@@ -161,12 +195,16 @@ function RtxServer(baseurl)
 	this.get = function(tail, params, rtx_success, rtx_error){
 
 		function get_result(data, textStatus, jqXHR){
-			if( jqXHR.status == 200 ){
-				rtx_success(RtxResponse(data));
-			}else{
-				rtx_error(RtxResponse(data));
-			}
+			rtx_success(RtxResponse(data));
 		}
+
+		function get_error(data, textStatus, jqXHR){
+				alert('blew up');
+				rtx_error(RtxResponse(data));
+		}
+
+		//console.log("*** "+tail+" ***");
+		//console.log(JSON.stringify(params, null, 4));
 
 		$.ajax({
 			type: 'GET',
@@ -174,7 +212,7 @@ function RtxServer(baseurl)
 			data: params,
 			headers: {'X-Yenot-SessionID': this.sid},
 			success: get_result,
-			error: rtx_error})
+			error: get_error})
 		//if( xmlhttp.Status != 200 )
 		//	rtx_exception_response(xmlhttp, 'GET', 'error reading data');
 		//rtx_success(RtxResponse(xmlhttp.responseText));

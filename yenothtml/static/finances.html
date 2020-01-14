@@ -32,71 +32,16 @@
 				window.location = "/login.html";
 			session = RtxServer(root);
 			session.sid = $.cookie("rtx_sid");
-			session.get("api/user/logged-in/reports", null, load_reports);
 		});
 
-		function load_reports(response){
-			var rptlist = response.main_table();
-			//alert(JSON.stringify(rptlist[0], null, 4));
-			rptlist.sort(function(a, b){
-				if( a.role_sort < b.role_sort )
-					return -1;
-				if( a.role_sort == b.role_sort && a.description <= b.description )
-					return -1;
-				if( a.role_sort == b.role_sort && a.description > b.description )
-					return +1;
-				if( a.role_sort > b.role_sort )
-					return +1;
-				return 0;
-			});
-			var data = [];
-			rptlist.forEach(function (a){
-				if( data.length == 0 || data[data.length-1].name != a.role )
-				{
-					data.push({
-						name: a.role, 
-						item: a, 
-						children: []});
-				}
-				child = {name: a.description, item: a};
-				// console.log(a.role + " >> " + a.description);
-				data[data.length-1].children.push(child);
-			});
-
-			var $tree = $("#rpttree");
-			$tree.tree({data: data, autoOpen: true});
-
-			$tree.on( 'tree.click', rpt_node_select);
-		}
-
-		function rpt_node_select(e) {
-			// Disable single selection
-			e.preventDefault();
-			var selrpt = e.node.item;
-			//alert(JSON.stringify(selrpt, null, 4));
-			//alert(selected_node.item.url);
-
-			var prompts = selrpt.prompts;
-			var inputs = prompts.map(function (p){
-				var x = "<label>"+rtx_column_label(p)+": </label>";
-				x += "<input id=\"preview_prompts_"+p[0]+"\" />";
-				x += "<br />";
-				return x;
-			});
-
-			var pvpro = $("#preview-prompts");
-			pvpro.empty();
-			inputs.forEach(function (ii) {pvpro.append(ii)});
-
-			run_report(selrpt);
-		}
-
-		function run_report(selrpt){
-			session.get(selrpt.url, null, load_report);
+		function search_submit() {
+			params = {fragment: $("#transaction_bit").val()}
+			session.get("api/transactions/list", params, load_report);
+			return false;
 		}
 
 		function load_report(content){
-			var grid = $("#preview-grid");
+			var grid = $("#transaction_data");
 
 			grid.jsGrid({
 				width: "60%",
@@ -105,6 +50,7 @@
 				fields: jsGrid_columns(content.main_table_columns())
 			});
 		}
+
 	</script>
 </head>
 <body>
@@ -118,18 +64,22 @@
 	<a href="/application.html" class="tabopt" id="tabopt3">Application</a>
 </div>
 
-<div class="reports">
-	<h3>Reports</h3>
-	<div id="rpttree">
-	</div>
+<form onsubmit="return search_submit();">
+<table class="search">
+	<tr>
+		<td>Search: </td>
+		<td><input type="text" id="transaction_bit" /></td>
+		<td><input type="submit" value="Search" /></td>
+	</tr>
+</table>
+</form>
+
+<div class="search_results" id="result-warning">
 </div>
 
-<div class="preview">
-	<div id="preview-prompts">
-	</div>
-	<div id="preview-grid">
-	</div>
+<div class="search_results" id="transaction_data">
 </div>
+
 
 <div class="diag">
 <h2>Diagnostics</h2>

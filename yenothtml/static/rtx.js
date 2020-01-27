@@ -199,8 +199,7 @@ function RtxServer(baseurl)
 		}
 
 		function get_error(data, textStatus, jqXHR){
-				alert('blew up');
-				rtx_error(RtxResponse(data));
+			rtx_error(RtxResponse(data));
 		}
 
 		//console.log("*** "+tail+" ***");

@@ -36,11 +36,11 @@
 
 		function search_submit() {
 			params = {frag: $("#contact_bit").val()}
-			session.get("api/personas/list", params, show_contact_results);
+			session.get("api/personas/list", params, show_contact_list);
 			return false;
 		}
 
-		function show_contact_results(content) {
+		function show_contact_list(content) {
 			var table = content.main_table();
 
 			if( table.length > 15 )
@@ -52,14 +52,86 @@
 
 			var grid = $('#contact_data');
 			grid.jsGrid({
-				width: "60%",
+				width: "100%",
 				sorting: "true",
+				rowClick: row_details,
 				data: table,
 				fields: jsGrid_columns(content.main_table_columns())
 			});
 		}
 
-	</script>
+		function row_details(args) {
+			session.get("api/persona/"+args.item.id, 
+				null, show_contact_details, show_contact_error);
+		}
+
+		function clipboard() {
+		}
+
+		function bit_html(bit) {
+			var es = function(x) { return (x === null) ? "" : x; };
+			var ns = function(x) { return (x == "") ? null : x };
+			var bd = bit.bit_data;
+			var lines = [];
+			if( bit.bit_type == "street_addresses" ) {
+				var addr3 = [es(bd["city"]), es(bd["state"]), es(bd["zip"])];
+
+				var addresses = [
+						ns(bd["address1"]),
+						ns(bd["address2"]),
+						addr3.join(" "),
+						ns(bd["country"])];
+				lines = addresses.filter(function(x) {return x !== null});
+			}
+			else if( bit.bit_type == "urls" ) {
+				var labeled = [];
+				var xurl = ns(bd['url']) !== null ? "<a href=\""+bd["url"]+"\">"+bd["url"]+"</a>" : " -- ";
+				labeled.push(['URL', xurl]);
+				if ( ns(bd["username"]) !== null || ns(bd["password"]) !== null ) {
+					labeled.push(["Username", es(bd["username"])]);
+					localurl = "javascript:clipboard()";//.format(urllib.parse.quote(bd["password"]))
+					labeled.push(["Password", "<a href=\""+localurl+"\">Copy Password</a>"]);
+				}
+				labeled.forEach(function(x) {
+					lines.push(x[0] + ": " + x[1]);
+				});
+			}
+			else if( bit.bit_type == "phone_numbers" ) {
+				lines.push(bd["number"]);
+			}
+			else if( bit.bit_type == "email_addresses" ) {
+				var xemail = ns(bd['email']) !== null ? "<a href=\"email:"+bd["email"]+"\">"+bd["email"]+"</a>" : " -- ";
+				lines.push(xemail);
+			}
+			if( ns(bit.name) !== null ) {
+				lines.unshift(bit.name);
+			}
+			if( ns(bit.memo) !== null ) {
+				lines.push("(memo)");
+			}
+			return lines.join("<br />");
+		}
+
+		function show_contact_details(content) {
+			var persona = content.table("persona");
+			var bits = content.table("bits");
+
+			var detdiv = $("#contact_detail");
+			detdiv.empty();
+
+			bits.forEach(function(elt) {
+				detdiv.append("<p>"+bit_html(elt)+"</p>");
+			});
+		}
+
+		function show_contact_error(xx) {
+			var detdiv = $("#contact_detail");
+			detdiv.empty();
+
+			detdiv.html("<p>error getting contact</p>");
+		}
+
+</script>
 </head>
 <body>
 <div class="banner">
@@ -85,9 +157,15 @@
 <div class="search_results" id="result-warning">
 </div>
 
-<div class="search_results" id="contact_data">
-</div>
+<div class="multipane_body">
+	<div class="search_results2" style="width: 60%">
+		<div class="search_results" id="contact_data" style="width: 100%">
+		</div>
+	</div>
 
+	<div class="row_detail" id="contact_detail" style="width: 35%">
+	</div>
+</div>
 
 <div class="diag">
 <h2>Diagnostics</h2>

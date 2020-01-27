@@ -26,6 +26,18 @@ body {
 	// border-style: solid;
 }
 
+.multipane_body {
+	overflow: hidden;
+}
+
+.search_results2 {
+	float: left;
+}
+
+.row_detail {
+	overflow: hidden;
+}
+
 .diag {
 	clear: both;
 }

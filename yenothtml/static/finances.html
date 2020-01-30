@@ -20,8 +20,8 @@
 	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
 	<script
 		type="text/javascript"
-		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
-
+		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"
+		></script>
     <link href="/static/lmsapp.css" rel="stylesheet" />
     <script src="/static/rtx.js"></script>
 	<script>
@@ -44,13 +44,44 @@
 			var grid = $("#transaction_data");
 
 			grid.jsGrid({
-				width: "60%",
+				height: "80%",
 				sorting: "true",
+				rowClick: row_details,
 				data: content.main_table(),
 				fields: jsGrid_columns(content.main_table_columns())
 			});
 		}
 
+		function row_details(args) {
+			session.get("api/transaction/"+args.item.tid,
+				null, show_transaction_details, show_transaction_error);
+		}
+
+		function show_transaction_details(content) {
+			var trans = content.table("trans");
+			var splits = content.table("splits");
+
+			var tranrow = trans[0];
+			$("#trandate").html(tranrow.trandate);
+			$("#tranref").html(tranrow.tranref);
+			$("#payee").html(tranrow.payee);
+			$("#memo").html(tranrow.memo);
+
+			var grid = $("#tran_splits");
+			grid.jsGrid({
+				width: "100%",
+				sorting: "true",
+				data: splits,
+				fields: jsGrid_columns(content.table_columns("splits"))
+			});
+		}
+
+		function show_transaction_error(xx) {
+			var detdiv = $("#transaction_detail");
+			detdiv.empty();
+
+			detdiv.html("<p>error getting transaction</p>");
+		}
 	</script>
 </head>
 <body>
@@ -77,9 +108,23 @@
 <div class="search_results" id="result-warning">
 </div>
 
-<div class="search_results" id="transaction_data">
-</div>
+<div class="multipane_body">
+	<div class="search_results2" style="width: 60%">
+		<div class="search_results" id="transaction_data" style="width: 100%">
+		</div>
+	</div>
 
+	<div class="row_detail" id="transaction_detail" style="width: 35%">
+		<p>
+		<b>Date:</b><p id="trandate" />
+		<b>Reference:</b><p id="tranref" />
+		<b>Payee:</b><p id="payee" />
+		<b>Memo:</b><p id="memo" />
+		</p>
+		<div class="asdf" id="tran_splits" style="width: 100%" />
+		</div>
+	</div>
+</div>
 
 <div class="diag">
 <h2>Diagnostics</h2>

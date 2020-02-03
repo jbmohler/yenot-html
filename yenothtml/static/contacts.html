@@ -24,6 +24,7 @@
 		></script>
 
     <link href="/static/lmsapp.css" rel="stylesheet" />
+    <script src="/static/tools.js"></script>
     <script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
@@ -66,9 +67,6 @@
 				null, show_contact_details, show_contact_error);
 		}
 
-		function clipboard() {
-		}
-
 		function bit_html(bit) {
 			var es = function(x) { return (x === null) ? "" : x; };
 			var ns = function(x) { return (x == "") ? null : x };
@@ -90,8 +88,16 @@
 				labeled.push(['URL', xurl]);
 				if ( ns(bd["username"]) !== null || ns(bd["password"]) !== null ) {
 					labeled.push(["Username", es(bd["username"])]);
-					localurl = "javascript:clipboard()";//.format(urllib.parse.quote(bd["password"]))
-					labeled.push(["Password", "<a href=\""+localurl+"\">Copy Password</a>"]);
+					copywrapper = function (bit_id) {
+						bits.forEach(function(elt) {
+							if( elt["id"] == bit_id ){
+								// https://stackoverflow.com/questions/41094318/firefox-document-execcommand-cut-copy-was-denied-because-it-was-not-calle
+								copyTextToClipboard(elt.bit_data["password"]);
+							}
+						});
+					};
+					localurl = "copywrapper('"+bit["id"]+"')";
+					labeled.push(["Password", "<button onclick=\""+localurl+"\">Copy Password</button>"]);
 				}
 				labeled.forEach(function(x) {
 					lines.push(x[0] + ": " + x[1]);
@@ -101,7 +107,7 @@
 				lines.push(bd["number"]);
 			}
 			else if( bit.bit_type == "email_addresses" ) {
-				var xemail = ns(bd['email']) !== null ? "<a href=\"email:"+bd["email"]+"\">"+bd["email"]+"</a>" : " -- ";
+				var xemail = ns(bd['email']) !== null ? "<a href=\"mailto:"+bd["email"]+"\">"+bd["email"]+"</a>" : " -- ";
 				lines.push(xemail);
 			}
 			if( ns(bit.name) !== null ) {
@@ -114,11 +120,20 @@
 		}
 
 		function show_contact_details(content) {
-			var persona = content.table("persona");
-			var bits = content.table("bits");
+			persona = content.table("persona");
+			bits = content.table("bits");
 
 			var detdiv = $("#contact_detail");
 			detdiv.empty();
+
+			var es = function(x) { return (x === null) ? "" : x; };
+			var ns = function(x) { return (x == "") ? null : x };
+			var full_name = persona[0].l_name;
+			if( es(persona[0].f_name) != "" ) {
+				full_name = persona[0].f_name + " " + persona[0].l_name;
+			}
+			detdiv.append("<h1>"+full_name+"</h1>");
+			detdiv.append("<p>"+persona[0].memo.replace(/\n/g, "<br />")+"</p>");
 
 			bits.forEach(function(elt) {
 				detdiv.append("<p>"+bit_html(elt)+"</p>");

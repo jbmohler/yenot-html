@@ -24,6 +24,7 @@
 		></script>
 
     <link href="/static/lmsapp.css" rel="stylesheet" />
+    <link href="/static/popup.css" rel="stylesheet" />
     <script src="/static/tools.js"></script>
     <script src="/static/rtx.js"></script>
 	<script>
@@ -93,11 +94,22 @@
 							if( elt["id"] == bit_id ){
 								// https://stackoverflow.com/questions/41094318/firefox-document-execcommand-cut-copy-was-denied-because-it-was-not-calle
 								copyTextToClipboard(elt.bit_data["password"]);
+								var popup = $('#pwpopup_'+bit_id.replace(/-/g, ''));
+								popup[0].classList.toggle("show");
+								setTimeout(function() {
+										popup[0].classList.toggle("show");
+								}, 3000);
 							}
 						});
 					};
 					localurl = "copywrapper('"+bit["id"]+"')";
-					labeled.push(["Password", "<button onclick=\""+localurl+"\">Copy Password</button>"]);
+					var popid = 'pwpopup_'+bit["id"].replace(/-/g, '');
+					var pwhtml = 
+						"<span class=\"popup\">" + 
+						"<button onclick=\""+localurl+"\">Copy Password</button>" + 
+						"<span class=\"popupText\" id=\""+popid+"\">Password Copied</span>" +
+						"</span>"
+					labeled.push(["Password", pwhtml]);
 				}
 				labeled.forEach(function(x) {
 					lines.push(x[0] + ": " + x[1]);

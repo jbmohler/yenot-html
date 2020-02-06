@@ -129,8 +129,15 @@ function RtxServer(baseurl)
 		function login_response(data, textStatus, jqXHR){
 			if( jqXHR.status == 200 ){
 				_this.sid = data.session;
-				$.cookie("rtx_prefix", _this.baseurl, {path: '/'});
-				$.cookie("rtx_sid", data.session, {path: '/'});
+				var date = new Date();
+				// hold the auth for 7 days
+				date.setTime(date.getTime() + 7*24*60*60*1000);
+				var flags = {
+					path: '/',
+					expires: 7
+				};
+				$.cookie("rtx_prefix", _this.baseurl, flags);
+				$.cookie("rtx_sid", data.session, flags);
 				success();
 			}else{
 				alert(data.status);

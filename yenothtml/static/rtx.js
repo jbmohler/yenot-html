@@ -36,7 +36,14 @@ function jsGrid_columns(columns)
 	}
 
 	var grcol = columns.filter(function (cc){
-		return cc[1] === null || cc[1].type === undefined || !cc[1].type.endsWith('.surrogate');
+		if( cc[1] === null ){
+			return true;
+		} else if( cc[1].hidden !== undefined && cc[1].hidden ) {
+			return false;
+		} else if( cc[1].type !== undefined && cc[1].type.endsWith('.surrogate') ) {
+			return false;
+		}
+		return true;
 	}).map(function (cc){
 		var gt = gtype(cc);
 		return {

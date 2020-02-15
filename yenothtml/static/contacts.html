@@ -1,7 +1,7 @@
 <html>
 <head>
-    <title>lms</title>
-
+	<title>lms</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script
 		type="text/javascript"
 		src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -23,10 +23,10 @@
 		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"
 		></script>
 
-    <link href="/static/lmsapp.css" rel="stylesheet" />
-    <link href="/static/popup.css" rel="stylesheet" />
-    <script src="/static/tools.js"></script>
-    <script src="/static/rtx.js"></script>
+	<link href="/static/lmsapp.css" rel="stylesheet" />
+	<link href="/static/popup.css" rel="stylesheet" />
+	<script src="/static/tools.js"></script>
+	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
 		$(document).ready(function() {
@@ -35,7 +35,24 @@
 				window.location = "/login.html";
 			session = RtxServer(root);
 			session.sid = $.cookie("rtx_sid");
+
+			resize_event();
+			route_pathtail($.cookie("pathtail"));
 		});
+
+		function route_pathtail(pathtail) {
+			if( pathtail === undefined ) {
+				return;
+			}
+
+			var xx = pathtail.match(/^contact\/([-a-z0-9]*)$/);
+			if( xx !== null ) {
+				session.get("api/persona/"+xx[1],
+					null, show_contact_details, show_contact_error);
+			}
+
+			var xx = pathtail.match(/^search\/([-a-z0-9]*)$/);
+		}
 
 		function search_submit() {
 			params = {frag: $("#contact_bit").val()}
@@ -44,6 +61,9 @@
 		}
 
 		function show_contact_list(content) {
+			window.history.pushState("contact", "persona.l_name",
+				"/contacts/search?query="+$("#contact_bit").val());
+
 			var table = content.main_table();
 
 			if( table.length > 15 )
@@ -135,6 +155,9 @@
 			persona = content.table("persona");
 			bits = content.table("bits");
 
+			window.history.pushState("contact", "persona.l_name",
+				"/contacts/contact/"+persona[0].id);
+
 			var detdiv = $("#contact_detail");
 			detdiv.empty();
 
@@ -159,9 +182,31 @@
 			detdiv.html("<p>error getting contact</p>");
 		}
 
+		function resize_event() {
+			var char_width = parseFloat($("html").css("font-size"));
+			var w = $(window).width() / char_width;
+			if( w < 40 ) {
+				// console.log("resizing skinny -- "+w);
+				$("#search_wrapper")
+					.removeClass("search_results2_wide")
+					.addClass("search_results2_narrow");
+				$("#contact_detail")
+					.removeClass("row_detail_wide")
+					.addClass("row_detail_narrow");
+			} else {
+				// console.log("resizing wide -- "+w);
+				$("#search_wrapper")
+					.removeClass("search_results2_narrow")
+					.addClass("search_results2_wide");
+				$("#contact_detail")
+					.removeClass("row_detail_narrow")
+					.addClass("row_detail_wide");
+			}
+		}
+
 </script>
 </head>
-<body>
+<body onresize="resize_event()">
 <div class="banner">
 	<h1>lms</h1>
 	<p id="userprof"></p>
@@ -172,26 +217,26 @@
 	<a href="/application.html" class="tabopt" id="tabopt3">Application</a>
 </div>
 
-<form onsubmit="return search_submit();">
-<table class="search">
-	<tr>
-		<td>Search: </td>
-		<td><input type="text" id="contact_bit" /></td>
-		<td><input type="submit" value="Search" /></td>
-	</tr>
-</table>
-</form>
-
-<div class="search_results" id="result-warning">
-</div>
-
 <div class="multipane_body">
-	<div class="search_results2" style="width: 60%">
+	<div class="search_results2" id="search_wrapper">
+		<form onsubmit="return search_submit();">
+		<table class="search">
+			<tr>
+				<td>Search: </td>
+				<td><input type="text" id="contact_bit" /></td>
+				<td><input type="submit" value="Search" /></td>
+			</tr>
+		</table>
+		</form>
+
+		<div class="search_results" id="result-warning">
+		</div>
+
 		<div class="search_results" id="contact_data" style="width: 100%">
 		</div>
 	</div>
 
-	<div class="row_detail" id="contact_detail" style="width: 35%">
+	<div class="row_detail" id="contact_detail">
 	</div>
 </div>
 

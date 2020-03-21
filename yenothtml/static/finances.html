@@ -24,6 +24,7 @@
 		></script>
 
 	<link href="/static/lmsapp.css" rel="stylesheet" />
+	<link href="/static/popup.css" rel="stylesheet" />
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
@@ -45,7 +46,7 @@
 			var grid = $("#transaction_data");
 
 			grid.jsGrid({
-				height: "80%",
+				width: "100%",
 				sorting: "true",
 				rowClick: row_details,
 				data: content.main_table(),
@@ -83,12 +84,40 @@
 
 			detdiv.html("<p>error getting transaction</p>");
 		}
+
+		function resize_event() {
+			var char_width = parseFloat($("html").css("font-size"));
+			var w = $(window).width() / char_width;
+			if( w < 40 ) {
+				// console.log("resizing skinny -- "+w);
+				$("#search_wrapper")
+					.removeClass("search_results2_wide")
+					.addClass("search_results2_narrow");
+				$("#transaction_detail")
+					.removeClass("row_detail_wide")
+					.addClass("row_detail_narrow");
+			} else {
+				// console.log("resizing wide -- "+w);
+				$("#search_wrapper")
+					.removeClass("search_results2_narrow")
+					.addClass("search_results2_wide");
+				$("#transaction_detail")
+					.removeClass("row_detail_narrow")
+					.addClass("row_detail_wide");
+			}
+		}
 	</script>
 </head>
-<body>
+<body onresize="resize_event()">
 <div class="banner">
-	<h1>lms</h1>
-	<p id="userprof"></p>
+	<div class="banner_title"><p>lms</p></div>
+	<div class="banner_profile">
+		<img src="/lms-avatar.png" width="32" height="32" />
+		<div class="dropdown-content">
+			<a href="#">Name</a>
+			<a href="#">Logout</a>
+		</div>
+	</div>
 </div>
 <div class="tab-container">
 	<a href="/contacts.html" class="tabopt" id="tabopt2">Contacts</a>
@@ -96,26 +125,26 @@
 	<a href="/application.html" class="tabopt" id="tabopt3">Application</a>
 </div>
 
-<form onsubmit="return search_submit();">
-<table class="search">
-	<tr>
-		<td>Search: </td>
-		<td><input type="text" id="transaction_bit" /></td>
-		<td><input type="submit" value="Search" /></td>
-	</tr>
-</table>
-</form>
-
-<div class="search_results" id="result-warning">
-</div>
-
 <div class="multipane_body">
-	<div class="search_results2" style="width: 60%">
+	<div class="search_results2" id="search_wrapper">
+		<form onsubmit="return search_submit();">
+		<table class="search">
+			<tr>
+				<td>Search: </td>
+				<td><input type="text" id="transaction_bit" /></td>
+				<td><input type="submit" value="Search" /></td>
+			</tr>
+		</table>
+		</form>
+
+		<div class="search_results" id="result-warning">
+		</div>
+
 		<div class="search_results" id="transaction_data" style="width: 100%">
 		</div>
 	</div>
 
-	<div class="row_detail" id="transaction_detail" style="width: 35%">
+	<div class="row_detail" id="transaction_detail">
 		<p>
 		<b>Date:</b><p id="trandate" />
 		<b>Reference:</b><p id="tranref" />

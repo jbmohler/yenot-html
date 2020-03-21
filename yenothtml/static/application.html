@@ -9,6 +9,11 @@
 		crossorigin="anonymous"></script>
 	<script
 		type="text/javascript"
+		src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+		integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+		crossorigin="anonymous"></script>
+	<script
+		type="text/javascript"
 		src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
 		></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.4.12/jqtree.css" rel="stylesheet" />
@@ -18,6 +23,9 @@
 		></script>
 	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
 	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+	<link 
+										   href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"
+		  rel="stylesheet" type="text/css">
 	<script
 		type="text/javascript"
 		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
@@ -78,10 +86,26 @@
 
 			var prompts = selrpt.prompts;
 			var inputs = prompts.map(function (p){
-				var x = "<label>"+rtx_column_label(p)+": </label>";
-				x += "<input id=\"preview_prompts_"+p[0]+"\" />";
+				var x = null;
+				var idlabel = "preview_prompts_"+p[0];
+				console.log(Object.keys(p[1]));
+				if( p[1].type == "date" ) {
+				   	x = "<label>"+rtx_column_label(p)+": </label>";
+					x += "<input id=\""+idlabel+"\" class=\"date_picker\" />";
+				}
+				else if( p[1].type == "boolean" ) {
+					x = "<input type=\"checkbox\" id=\""+idlabel+"\" />";
+				}
+				else {
+				   	x = "<label>"+rtx_column_label(p)+": </label>";
+					x += "<input id=\""+idlabel+"\" />";
+				}
 				x += "<br />";
 				return x;
+			});
+
+			$("body").on("focus", ".date_picker", function(){
+				$(this).datepicker();
 			});
 
 			var pvpro = $("#preview-prompts");

@@ -66,12 +66,12 @@
 
 			var table = content.main_table();
 
-			if( table.length > 15 )
-				$("#result-warning").append("<p>only showing 15 results</p>");
+			if( table.length > 150 )
+				$("#result-warning").append("<p>only showing 150 results</p>");
 			else
 				$("#result-warning").empty();
 
-			table = table.slice(0, 15);
+			table = table.slice(0, 150);
 
 			var grid = $('#contact_data');
 			grid.jsGrid({
@@ -208,8 +208,14 @@
 </head>
 <body onresize="resize_event()">
 <div class="banner">
-	<h1>lms</h1>
-	<p id="userprof"></p>
+	<div class="banner_title"><p>lms</p></div>
+	<div class="banner_profile">
+		<img src="/lms-avatar.png" width="32" height="32" />
+		<div class="dropdown-content">
+			<a href="#">Name</a>
+			<a href="#">Logout</a>
+		</div>
+	</div>
 </div>
 <div class="tab-container">
 	<a href="/contacts.html" class="tabopt" id="tabopt2">Contacts</a>

@@ -21,6 +21,11 @@ def static():
     global STATIC_ROOT
     return static_file('loginpin.html', root=STATIC_ROOT)
 
+@app.get('/lms-avatar.png', name='lms_avatar_png', skip=['yenot-auth'])
+def static():
+    global STATIC_ROOT
+    return static_file('lms-avatar.png', root=STATIC_ROOT)
+
 @app.get('/contacts/<tail:path>', name='contacts_html', skip=['yenot-auth'])
 def static(tail):
     global STATIC_ROOT

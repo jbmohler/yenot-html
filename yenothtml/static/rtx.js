@@ -253,26 +253,23 @@ function RtxServer(baseurl)
 		return RtxResponse(xmlhttp.responseText);
 	}
 
-	this.post = function(tail, params)
+	this.post = function(tail, params, data, rtx_success, rtx_error)
 	{
-		var index = 0;
-		var pstr = '';
-		for( var key in params )
-		{
-			if(index == 0)
-				pstr += '?';
-			else
-				pstr += '&';
-			pstr += key+'='+params[key];
-			index += 1;
+		function get_result(data, textStatus, jqXHR){
+			rtx_success(RtxResponse(data));
 		}
 
-		xmlhttp.open('post', this.baseurl+tail+pstr, false);
-		xmlhttp.setRequestHeader('X-Yenot-SessionID', this.sid);
-		xmlhttp.send()
-		if( xmlhttp.Status > 211 ) // accomodate login session call
-			rtx_exception_response(xmlhttp, 'POST', 'error saving data');
-		return RtxResponse(xmlhttp.responseText)
+		function get_error(data, textStatus, jqXHR){
+			rtx_error(RtxResponse(data));
+		}
+
+		$.ajax({
+			type: 'POST',
+			url: this.baseurl+tail,
+			headers: {'X-Yenot-SessionID': this.sid},
+			data: data,
+			success: get_result,
+			error: get_error})
 	}
 
 	return this;

@@ -25,6 +25,7 @@
 
 	<link href="/static/lmsapp.css" rel="stylesheet" />
 	<link href="/static/popup.css" rel="stylesheet" />
+	<script src="/static/tools.js"></script>
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
@@ -117,6 +118,13 @@
 			<a href="#">Name</a>
 			<a href="#">Logout</a>
 		</div>
+	</div>
+	<div class="banner_roscoe">
+		<form onsubmit="return roscoe_submit();">
+			<p>Remind me later:
+			<input type="submit" value="Send" /></p>
+			<textarea rows="2"></textarea><br />
+		</form>
 	</div>
 </div>
 <div class="tab-container">

@@ -32,3 +32,21 @@ function copyTextToClipboard(text) {
 		console.error('Async: Could not copy text: ', err);
 	});
 }
+
+// roscoe client helpers
+//
+
+function roscoe_success() {
+	alert("This will be reviewed back on the main computer.");
+	$("#roscoe_reminder").val("");
+}
+
+function roscoe_error() {
+	alert("There was an error posting this data for reminder.");
+}
+
+function roscoe_submit() {
+	params = {reminder: $("#roscoe_reminder").val()}
+	session.post("api/roscoe/reminder", null, params, roscoe_success, roscoe_error);
+	return false;
+}

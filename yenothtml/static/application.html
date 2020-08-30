@@ -31,6 +31,7 @@
 		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
 
 	<link href="/static/lmsapp.css" rel="stylesheet" />
+	<script src="/static/tools.js"></script>
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
@@ -133,8 +134,21 @@
 </head>
 <body>
 <div class="banner">
-	<h1>lms</h1>
-	<p id="userprof"></p>
+	<div class="banner_title"><p>lms</p></div>
+	<div class="banner_profile">
+		<img src="/lms-avatar.png" width="32" height="32" />
+		<div class="dropdown-content">
+			<a href="#">Name</a>
+			<a href="#">Logout</a>
+		</div>
+	</div>
+	<div class="banner_roscoe">
+		<form onsubmit="return roscoe_submit();">
+			<p>Remind me later:
+			<input type="submit" value="Send" /></p>
+			<textarea rows="2"></textarea><br />
+		</form>
+	</div>
 </div>
 <div class="tab-container">
 	<a href="/contacts.html" class="tabopt" id="tabopt2">Contacts</a>

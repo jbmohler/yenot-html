@@ -168,7 +168,9 @@
 				full_name = persona[0].f_name + " " + persona[0].l_name;
 			}
 			detdiv.append("<h1>"+full_name+"</h1>");
-			detdiv.append("<p>"+persona[0].memo.replace(/\n/g, "<br />")+"</p>");
+			if( persona[0].memo !== null ) {
+				detdiv.append("<p>"+persona[0].memo.replace(/\n/g, "<br />")+"</p>");
+			}
 
 			bits.forEach(function(elt) {
 				detdiv.append("<p>"+bit_html(elt)+"</p>");

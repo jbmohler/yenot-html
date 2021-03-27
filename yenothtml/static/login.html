@@ -29,7 +29,14 @@
 			session.login(
 				$("#username").val(), 
 				$("#password").val(),
-				authenticate);
+				function() {
+					if( $("#save-device-login:checked").val() ) {
+						session.save_device_token(authenticate);
+					} else {
+						authenticate();
+					}
+				}
+			);
 			return false;
 		}
 	</script>
@@ -48,6 +55,12 @@
     <tr>
         <td>Password:</td>
         <td><input type="password" id="password" name="password" /></td>
+    </tr>
+    <tr>
+		<td colspan="2">
+			<input type="checkbox" id="save-device-login" name="save-device-login" value="save" />
+			<label for="save-device-login">Remember this login on this device</label>
+		</td>
         <td><input type="submit" value="Login" /></td>
     </tr>
     </table>

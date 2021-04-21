@@ -131,11 +131,11 @@ function rtx_session_from_token(success, failure)
 	var session = RtxServer(root);
 
 	var dt = localStorage.rtx_devtoken;
-	var sid = sessionStorage.rtx_sid;
+	var access_token = sessionStorage.rtx_access_token;
 	if( dt !== undefined) {
 		session.login_saved(success, failure);
-	} else if ( sid !== undefined ) {
-		session.sid = sessionStorage.rtx_sid;
+	} else if ( access_token !== undefined ) {
+		session.access_token = sessionStorage.rtx_access_token;
 		// should verify the session id is still valid??
 		success(session);
 	}
@@ -182,14 +182,14 @@ function RtxServer(baseurl)
 	{
 		function login_response(data, textStatus, jqXHR){
 			if( jqXHR.status == 200 ){
-				sessionStorage.rtx_sid = data.session;
+				sessionStorage.rtx_access_token = data.access_token;
 				sessionStorage.rtx_userid = data.userid;
 				sessionStorage.rtx_username = data.username;
 
 				var flags = { path: '/', samesite: "strict" };
 				$.cookie("rtx_prefix", _this.baseurl, flags);
 
-				_this.sid = data.session;
+				_this.access_token = data.access_token;
 				_this.rtx_userid = data.userid;
 				_this.rtx_username = data.username;
 
@@ -215,7 +215,7 @@ function RtxServer(baseurl)
 
 		function login_response(data, textStatus, jqXHR){
 			if( jqXHR.status == 200 ){
-				_this.sid = data.session;
+				_this.access_token = data.access_token;
 				_this.rtx_userid = data.userid;
 				_this.rtx_username = data.username;
 
@@ -241,7 +241,7 @@ function RtxServer(baseurl)
 		function login_response(data, textStatus, jqXHR){
 			alert(data);
 			if( jqXHR.status == 200 ){
-				_this.sid = data.session;
+				_this.access_token = data.access_token;
 				_this.step2fa = true;
 				success();
 			}else{
@@ -260,7 +260,7 @@ function RtxServer(baseurl)
 	{
 		function login_response(data, textStatus, jqXHR){
 			if( jqXHR.status == 200 ){
-				_this.sid = data.session;
+				_this.access_token = data.access_token;
 				_this.step2fa = false;
 				success();
 			}else{
@@ -271,7 +271,7 @@ function RtxServer(baseurl)
 		$.ajax({
 			type: 'POST',
 			url: this.baseurl+'api/session/promote-2fa',
-			headers: {'X-Yenot-SessionID': this.sid},
+			headers: {'Authorization': 'Bearer ' + this.access_token},
 			data: {pin2: pin},
 			success: login_response
 		})
@@ -293,9 +293,9 @@ function RtxServer(baseurl)
 
 				sessionStorage.removeItem("rtx_username");
 				sessionStorage.removeItem("rtx_userid");
-				sessionStorage.removeItem("rtx_sid");
+				sessionStorage.removeItem("rtx_access_token");
 
-				_this.sid = null;
+				_this.access_token = null;
 
 				window.location = "/login.html";
 			}else{
@@ -306,14 +306,14 @@ function RtxServer(baseurl)
 		$.ajax({
 			type: 'PUT',
 			url: this.baseurl+'api/session/logout',
-			headers: {'X-Yenot-SessionID': this.sid},
+			headers: {'Authorization': 'Bearer ' + this.access_token},
 			success: logout_response
 		})
 	}
 
 	this.auth_headers = function() {
 		return {
-			'X-Yenot-SessionID': this.sid,
+			'Authorization': 'Bearer ' + this.access_token,
 			'X-Yenot-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
 		}
 	}
@@ -355,26 +355,24 @@ function RtxServer(baseurl)
 		})
 	}
 
-	this.put = function(tail, params)
+	this.put = function(tail, params, data, rtx_success, rtx_error)
 	{
-		var index = 0;
-		var pstr = '';
-		for( var key in params )
-		{
-			if(index == 0)
-				pstr += '?';
-			else
-				pstr += '&';
-			pstr += key+'='+params[key];
-			index += 1;
+		function get_result(data, textStatus, jqXHR){
+			rtx_success(RtxResponse(data));
 		}
 
-		xmlhttp.open('put', this.baseurl+tail+pstr, false);
-		xmlhttp.setRequestHeader('X-Yenot-SessionID', this.sid);
-		xmlhttp.send()
-		if( xmlhttp.Status > 211 ) // accomodate login session call
-			rtx_exception_response(xmlhttp, 'PUT', 'error saving data');
-		return RtxResponse(xmlhttp.responseText);
+		function get_error(data, textStatus, jqXHR){
+			rtx_error(RtxResponse(data));
+		}
+
+		$.ajax({
+			type: 'PUT',
+			url: this.baseurl+tail,
+			headers: this.auth_headers(),
+			data: data,
+			success: get_result,
+			error: get_error
+		})
 	}
 
 	this.post = function(tail, params, data, rtx_success, rtx_error)

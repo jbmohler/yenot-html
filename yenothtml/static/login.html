@@ -3,15 +3,18 @@
 	<title>lms Login</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
-	<link href="/static/lmsapp.css" rel="stylesheet" />
 	<script
+		type="text/javascript"
 		src="https://code.jquery.com/jquery-3.3.1.min.js"
 		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
 		crossorigin="anonymous"></script>
 	<script
+		type="text/javascript"
 		src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
 		></script>
 
+	<link rel="shortcut icon" type="image/png" href="/static/jlm_initials.png" />
+	<link href="/static/lmsapp.css" rel="stylesheet" />
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
@@ -22,7 +25,7 @@
 		});
 
 		function authenticate(){
-			window.location = "/contacts.html";
+			window.location = "/";
 		}
 
 		function my_login(){

@@ -2,27 +2,59 @@
 <head>
     <title>lms</title>
     <!-- <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
-    <link href="/static/lmsapp.css" rel="stylesheet" />
 	<script
 		src="https://code.jquery.com/jquery-3.3.1.min.js"
 		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
 		crossorigin="anonymous"></script>
 	<script
-	src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
-	></script>
-    <script src="/static/rtx.js"></script>
+		type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
+		></script>
+
+	<link rel="shortcut icon" type="image/png" href="/static/jlm_initials.png" />
+	<link href="/static/lmsapp.css" rel="stylesheet" />
+	<link href="/static/popup.css" rel="stylesheet" />
+	<script src="/static/tools.js"></script>
+	<script src="/static/rtx.js"></script>
 	<script>
+		var session = null;
 		$(document).ready(function() {
-			var root = $.cookie("rtx_prefix");
-			if( root === undefined )
-				window.location = "/login.html";
-			else
-				window.location = "/application.html";
+			session = rtx_session_from_token(
+				function(initialized) {
+					session = initialized;
+					rtx_init_profile_menu();
+				},
+				function() {
+					window.location = "/login.html";
+				}
+			);
 		});
 	</script>
 </head>
 <body>
-	<p><a href="/login.html">login here</a></p>
+<div class="banner">
+	<div class="banner_title"><p>lms</p></div>
+	<div class="banner_profile">
+		<img src="/lms-avatar.png" width="32" height="32" />
+		<div class="dropdown-content">
+			<a href="#" id="rtx_user_profile">Name</a>
+			<a href="#" id="rtx_logout">Logout</a>
+		</div>
+	</div>
+	<div class="banner_roscoe">
+		<form onsubmit="return roscoe_submit();">
+			<p>Remind me later:
+			<input type="submit" value="Send" /></p>
+			<textarea rows="2" id="roscoe_reminder"></textarea><br />
+		</form>
+	</div>
+</div>
+<div class="tab-container">
+	<a href="/" class="tabopt" id="tabopt0">Dashboard</a>
+	<a href="/contacts.html" class="tabopt" id="tabopt2">Contacts</a>
+	<a href="/finances.html" class="tabopt" id="tabopt1">Finances</a>
+	<a href="/application.html" class="tabopt" id="tabopt3">Application</a>
+</div>
 
 <div class="diag">
 <h2>Diagnostics</h2>
@@ -30,6 +62,7 @@
 <p>The <a href="/api/ping">ping endpoint</a> is not authenticated and is useful for
 establishing basic connectivity and latency checks.</p>
 </div>
+	<p><a href="/login.html">login here</a></p>
 
 </body>
 </html>

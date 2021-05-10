@@ -22,6 +22,7 @@
 		type="text/javascript"
 		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"
 		></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 	<link rel="shortcut icon" type="image/png" href="/static/jlm_initials.png" />
 	<link href="/static/lmsapp.css" rel="stylesheet" />
@@ -112,6 +113,12 @@
 			}
 		}
 	</script>
+	<style>
+	.tab_div {
+		overflow: hidden;
+		background-color: #333;
+	}
+	</style>
 </head>
 <body onresize="resize_event()">
 <div class="banner">
@@ -131,11 +138,15 @@
 		</form>
 	</div>
 </div>
-<div class="tab-container">
-	<a href="/" class="tabopt" id="tabopt0">Dashboard</a>
-	<a href="/contacts.html" class="tabopt" id="tabopt2">Contacts</a>
-	<a href="/finances.html" class="tabopt" id="tabopt1">Finances</a>
-	<a href="/application.html" class="tabopt" id="tabopt3">Application</a>
+
+<div class="tab_div" id="the_tab_div">
+	<a href="/">Dashboard</a>
+	<a href="/contacts.html">Contacts</a>
+	<a href="/finances.html" class="active">Finances</a>
+	<a href="/reports.html">Reports</a>
+	<a href="javascript:void(0);" class="icon" onclick="myFunction()">
+		<i class="fa fa-bars"></i>
+	</a>
 </div>
 
 <div class="multipane_body">

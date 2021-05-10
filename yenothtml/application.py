@@ -50,10 +50,10 @@ def static():
     global STATIC_ROOT
     return static_file('finances.html', root=STATIC_ROOT)
 
-@app.get('/application.html', name='application_html', skip=['yenot-auth'])
+@app.get('/reports.html', name='reports_html', skip=['yenot-auth'])
 def static():
     global STATIC_ROOT
-    return static_file('application.html', root=STATIC_ROOT)
+    return static_file('reports.html', root=STATIC_ROOT)
 
 @app.route('/static/<path:path>', name='static', skip=['yenot-auth'])
 def static(path):

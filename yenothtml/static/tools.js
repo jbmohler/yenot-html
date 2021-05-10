@@ -33,6 +33,16 @@ function copyTextToClipboard(text) {
 	});
 }
 
+function myFunction() {
+	var x = document.getElementById("the_tab_div");
+	if (x.className === "tab_div") {
+		x.className += " responsive";
+	} else {
+		x.className = "tab_div";
+	}
+}
+
+
 // roscoe client helpers
 //
 

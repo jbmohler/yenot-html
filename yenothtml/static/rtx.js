@@ -155,9 +155,20 @@ function rtx_init_profile_menu() {
 		});
 		return false;
 	}
-
 	$("#rtx_user_profile").click(show_user_profile);
 	$("#rtx_user_profile").text("User Profile ("+sessionStorage.rtx_username+")");
+
+	function show_lms_technical() {
+		window.location = "/lms/technical";
+		//return false;
+	}
+	$("#rtx_source").click(show_lms_technical);
+
+	function show_lms_diagnostics() {
+		window.location = "/lms/diagnostics";
+		//return false;
+	}
+	$("#rtx_diagnostics").click(show_lms_diagnostics);
 
 	function user_logout() {
 		var username = sessionStorage.rtx_username;
@@ -165,7 +176,6 @@ function rtx_init_profile_menu() {
 		session.logout();
 		return false;
 	}
-
 	$("#rtx_logout").click(user_logout);
 }
 

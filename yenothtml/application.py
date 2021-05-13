@@ -59,3 +59,41 @@ def static():
 def static(path):
     global STATIC_ROOT
     return static_file(path, root=STATIC_ROOT)
+
+
+@app.get("/lms/technical", name="get_lms_technical", skip=["yenot-auth"])
+def get_lms_technical():
+    return """\
+<html>
+<head>
+</head>
+<body>
+The source code is at:
+
+<ul>
+<li><a href="https://github.com/jbmohler/yenot">https://github.com/jbmohler/yenot</a></li>
+<li><a href="https://github.com/jbmohler/yenot-auth">https://github.com/jbmohler/yenot-auth</a></li>
+<li><a href="https://github.com/jbmohler/yenot-lmshacc">https://github.com/jbmohler/yenot-lmshacc</a></li>
+<li><a href="https://github.com/jbmohler/yenot-lmscontacts">https://github.com/jbmohler/yenot-lmscontacts</a></li>
+<li><a href="https://github.com/jbmohler/yenot-lmsdatabits">https://github.com/jbmohler/yenot-lmsdatabits</a></li>
+<li><a href="https://github.com/jbmohler/yenot-html">https://github.com/jbmohler/yenot-html</a></li>
+</ul>
+</body>
+</html>
+"""
+
+
+@app.get("/lms/diagnostics", name="get_lms_diagnostics", skip=["yenot-auth"])
+def get_lms_technical():
+    return """\
+<html>
+<head>
+</head>
+<body>
+<h2>Diagnostics</h2>
+
+<p>The <a href="/api/ping">ping endpoint</a> is not authenticated and is useful for
+establishing basic connectivity and latency checks.</p>
+</body>
+</html>
+"""

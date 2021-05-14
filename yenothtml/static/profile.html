@@ -1,0 +1,116 @@
+<html>
+<head>
+    <title>lms</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script
+		type="text/javascript"
+		src="https://code.jquery.com/jquery-3.3.1.min.js"
+		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+		crossorigin="anonymous"></script>
+	<script
+		type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
+		></script>
+	<script
+		type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"
+		></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<link rel="shortcut icon" type="image/png" href="/static/jlm_initials.png" />
+	<link href="/static/lmsapp.css" rel="stylesheet" />
+	<link href="/static/popup.css" rel="stylesheet" />
+	<script src="/static/tools.js"></script>
+	<script src="/static/rtx.js"></script>
+	<script>
+		var session = null;
+		$(document).ready(function() {
+			session = rtx_session_from_token(
+				function(initialized) {
+					session = initialized;
+					session.get("api/user/me", null, load_profile_data);
+					rtx_init_profile_menu();
+				},
+				function() {
+					window.location = "/login.html";
+				}
+			);
+		});
+
+		function load_profile_data(content) {
+			var user = content.table("user");
+			var userrow = user[0];
+			$("#username").html(userrow.username);
+			$("#full_name").html(userrow.full_name);
+			$("#descr").html(userrow.descr);
+
+			var roles = content.table("roles");
+			var grid = $("#user_roles");
+			grid.jsGrid({
+				width: "100%",
+				sorting: "true",
+				data: roles,
+				fields: jsGrid_columns(content.table_columns("roles"))
+			});
+
+			var devicetokens = content.table("devicetokens");
+			var grid = $("#user_devicetokens");
+			grid.jsGrid({
+				width: "100%",
+				sorting: "true",
+				data: devicetokens,
+				fields: jsGrid_columns(content.table_columns("devicetokens"))
+			});
+		}
+	</script>
+	<style>
+	.tab_div {
+		overflow: hidden;
+		background-color: #333;
+	}
+	</style>
+</head>
+<body>
+<div class="banner">
+	<div class="banner_title">lms</div>
+	<div class="banner_profile">
+		<img src="/lms-avatar.png" width="32" height="32" />
+		<div class="dropdown-content">
+			<a href="#" id="rtx_user_profile">Name</a>
+			<a href="#" id="rtx_source">Source Code</a>
+			<a href="#" id="rtx_diagnostics">Diagnostics</a>
+			<a href="#" id="rtx_logout">Logout</a>
+		</div>
+	</div>
+	<div class="banner_roscoe">
+		<form onsubmit="return roscoe_submit();">
+			<p>Remind me later:
+			<input type="submit" value="Send" /></p>
+			<textarea rows="2" id="roscoe_reminder"></textarea><br />
+		</form>
+	</div>
+</div>
+
+<div class="tab_div" id="the_tab_div">
+	<a href="/">Dashboard</a>
+	<a href="/contacts.html">Contacts</a>
+	<a href="/finances.html">Finances</a>
+	<a href="/reports.html">Reports</a>
+	<a href="/lms/user-profile" class="active">Profile</a>
+	<a href="javascript:void(0);" class="icon" onclick="myFunction()">
+		<i class="fa fa-bars"></i>
+	</a>
+</div>
+
+<div class="user_profile">
+	<p>
+	<b>Username:</b>  <span id="username"></span><br />
+	<b>Full Name:</b>  <span id="full_name"></span><br />
+	<b>Note:</b>  <span id="descr"></span><br />
+	</p>
+	<div class="asdf" id="user_roles" style="width: 100%"></div>
+	<div class="asdf" id="user_devicetokens" style="width: 100%"></div>
+</div>
+
+</body>
+</html>

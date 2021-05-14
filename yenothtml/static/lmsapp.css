@@ -102,7 +102,8 @@ body {
 }
  
 @media screen and (max-width: 600px) {
-	.tab_div a:not(:first-child) {display: none;}
+	.tab_div a:not(.active) {display: none;}
+	.tab_div a.active {display: block;}
 	.tab_div a.icon {
 		float: right;
 		display: block;

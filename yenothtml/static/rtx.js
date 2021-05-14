@@ -12,7 +12,7 @@ function rtx_column_label(prelt)
 	if( prelt[1].label !== undefined )
 		return prelt[1].label;
 	else
-		return titleCase(prelt[0].replace('_', ' '));
+		return titleCase(prelt[0].replaceAll('_', ' '));
 }
 
 function jsGrid_columns(columns)
@@ -122,6 +122,25 @@ function RtxResponse(content)
 	return this;
 }
 
+function rtx_session_no_auth(initialized)
+{
+	var root = $.cookie("rtx_prefix");
+	if( root === undefined )
+		window.location = "/login.html";
+
+	var session = RtxServer(root);
+
+	var dt = localStorage.rtx_devtoken;
+	var access_token = sessionStorage.rtx_access_token;
+	if( dt !== undefined) {
+		session.login_saved(initialized, initialized);
+	}
+	
+	initialized();
+
+	return session;
+}
+
 function rtx_session_from_token(success, failure)
 {
 	var root = $.cookie("rtx_prefix");
@@ -148,12 +167,8 @@ function rtx_session_from_token(success, failure)
 
 function rtx_init_profile_menu() {
 	function show_user_profile() {
-		console.log("user profile");
-		session.get("api/user/me", null, function(data) {
-			console.log("Profile: "+data.main_table()[0].username);
-			console.log(">>> "+data.main_table()[0].full_name);
-		});
-		return false;
+		window.location = "/lms/user-profile";
+		//return false;
 	}
 	$("#rtx_user_profile").click(show_user_profile);
 	$("#rtx_user_profile").text("User Profile ("+sessionStorage.rtx_username+")");

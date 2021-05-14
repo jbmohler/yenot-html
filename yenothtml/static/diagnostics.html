@@ -1,0 +1,80 @@
+<html>
+<head>
+    <title>lms</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
+	<script
+		src="https://code.jquery.com/jquery-3.3.1.min.js"
+		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+		crossorigin="anonymous"></script>
+	<script
+		type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"
+		></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<link rel="shortcut icon" type="image/png" href="/static/jlm_initials.png" />
+	<link href="/static/lmsapp.css" rel="stylesheet" />
+	<link href="/static/popup.css" rel="stylesheet" />
+	<script src="/static/tools.js"></script>
+	<script src="/static/rtx.js"></script>
+	<script>
+		var session = null;
+		$(document).ready(function() {
+			session = rtx_session_no_auth(
+				function() {
+					rtx_init_profile_menu();
+				}
+			);
+		});
+	</script>
+	<style>
+	.tab_div {
+		overflow: hidden;
+		background-color: #333;
+	}
+	</style>
+</head>
+<body>
+<div class="banner">
+	<div class="banner_title">lms</div>
+	<div class="banner_profile">
+		<img src="/lms-avatar.png" width="32" height="32" />
+		<div class="dropdown-content">
+			<a href="#" id="rtx_user_profile">Name</a>
+			<a href="#" id="rtx_source">Source Code</a>
+			<a href="#" id="rtx_diagnostics">Diagnostics</a>
+			<a href="#" id="rtx_logout">Logout</a>
+		</div>
+	</div>
+	<div class="banner_roscoe">
+		<form onsubmit="return roscoe_submit();">
+			<p>Remind me later:
+			<input type="submit" value="Send" /></p>
+			<textarea rows="2" id="roscoe_reminder"></textarea><br />
+		</form>
+	</div>
+</div>
+
+<div class="tab_div" id="the_tab_div">
+	<a href="/">Dashboard</a>
+	<a href="/contacts.html">Contacts</a>
+	<a href="/finances.html">Finances</a>
+	<a href="/reports.html">Reports</a>
+	<a href="/lms/diagnostics" class="active">Diagnostics</a>
+	<a href="javascript:void(0);" class="icon" onclick="myFunction()">
+		<i class="fa fa-bars"></i>
+	</a>
+</div>
+
+<div class="main_content">
+<h2>Diagnostics</h2>
+
+<p>The <a href="/api/ping">ping endpoint</a> is not authenticated and is useful for
+establishing basic connectivity and latency checks.</p>
+</div>
+
+</body>
+</html>
+
+

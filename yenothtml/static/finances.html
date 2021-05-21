@@ -31,6 +31,7 @@
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
+		var active_transaction = null;
 		$(document).ready(function() {
 			session = rtx_session_from_token(
 				function(initialized) {
@@ -44,11 +45,11 @@
 
 		function search_submit() {
 			params = {fragment: $("#transaction_bit").val()}
-			session.get("api/transactions/list", params, load_report);
+			session.get("api/transactions/list", params, load_search_resuls);
 			return false;
 		}
 
-		function load_report(content){
+		function load_search_resuls(content){
 			var grid = $("#transaction_data");
 
 			grid.jsGrid({
@@ -82,6 +83,12 @@
 				data: splits,
 				fields: jsGrid_columns(content.table_columns("splits"))
 			});
+
+			window.history.pushState("finances.transaction", "Transaction "+tranrow.memo,
+				"/finances/transaction/"+tranrow.tid);
+
+			active_transaction = tranrow.tid;
+			resize_event();
 		}
 
 		function show_transaction_error(xx) {
@@ -91,25 +98,53 @@
 			detdiv.html("<p>error getting transaction</p>");
 		}
 
+		function back_to_search() {
+			window.history.pushState("finances.transaction", "Transaction Search",
+				"/finances/transactions");
+
+			active_transaction = null;
+			resize_event();
+		}
+
 		function resize_event() {
 			var char_width = parseFloat($("html").css("font-size"));
 			var w = $(window).width() / char_width;
-			if( w < 40 ) {
-				// console.log("resizing skinny -- "+w);
+			if( w < 40 && active_transaction !== null ) {
+				//console.log("resizing skinny -- "+w+"; showing active_transaction");
 				$("#search_wrapper")
 					.removeClass("search_results2_wide")
+					.removeClass("search_results2_narrow")
+					.addClass("search_results2_suppressed");
+				$("#transaction_detail")
+					.removeClass("row_detail_wide")
+					.addClass("row_detail_narrow");
+				$("#search_back")
+					.removeClass("search_back")
+					.addClass("search_back_scoop");
+			} else if( w < 40 && active_transaction === null ) {
+				//console.log("resizing skinny -- "+w+"; null active_transaction");
+				$("#search_wrapper")
+					.removeClass("search_results2_wide")
+					.removeClass("search_results2_suppressed")
 					.addClass("search_results2_narrow");
 				$("#transaction_detail")
 					.removeClass("row_detail_wide")
 					.addClass("row_detail_narrow");
+				$("#search_back")
+					.removeClass("search_back")
+					.addClass("search_back_scoop");
 			} else {
-				// console.log("resizing wide -- "+w);
+				//console.log("resizing wide -- "+w);
 				$("#search_wrapper")
 					.removeClass("search_results2_narrow")
+					.removeClass("search_results2_suppressed")
 					.addClass("search_results2_wide");
 				$("#transaction_detail")
 					.removeClass("row_detail_narrow")
 					.addClass("row_detail_wide");
+				$("#search_back")
+					.removeClass("search_back_scoop")
+					.addClass("search_back");
 			}
 		}
 	</script>
@@ -171,6 +206,8 @@
 	</div>
 
 	<div class="row_detail" id="transaction_detail">
+		<a href="#" class="search_back" id="search_back" onClick="back_to_search()">&lt;&lt; Back to Search</a>
+
 		<p>
 		<b>Date:</b>  <span id="trandate"></span><br />
 		<b>Reference:</b>  <span id="tranref"></span><br />

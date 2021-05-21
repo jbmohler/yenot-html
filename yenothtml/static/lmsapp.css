@@ -160,9 +160,20 @@ body {
 	width: 100%;
 }
 
+.search_results2_suppressed {
+	display: none;
+}
+
 .row_detail_narrow {
 	overflow: hidden;
 	width: 100%;
+}
+
+.search_back {
+	display: none;
+}
+
+.search_back_scoop {
 }
 
 .diag {

@@ -20,6 +20,10 @@ function jsGrid_columns(columns)
 	function listconcat(value, item){
 		return value.join('; ');
 	}
+	var currency_format = new Intl.NumberFormat("en-US", {minimumFractionDigits: 2});
+	function format_currency(value, item){
+		return currency_format.format(value);
+	}
 	function gtype(cc)
 	{
 		if( cc[1] !== null && cc[1].type !== undefined )
@@ -29,6 +33,8 @@ function jsGrid_columns(columns)
 				return {"type": "checkbox"};
 			if( tt == "integer" )
 				return {"type": "number"};
+			if( tt == "currency_usd" )
+				return {"type": "number", itemTemplate: format_currency};
 			if( tt == "stringlist" )
 				return {"type": "text", itemTemplate: listconcat}
 		}

@@ -31,6 +31,7 @@
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
+		var active_preview = null;
 		$(document).ready(function() {
 			session = rtx_session_from_token(
 				function(initialized) {
@@ -110,7 +111,7 @@
 			}
 			else if( bit.bit_type == "urls" ) {
 				var labeled = [];
-				var xurl = ns(bd['url']) !== null ? "<a href=\""+bd["url"]+"\">"+bd["url"]+"</a>" : " -- ";
+				var xurl = ns(bd['url']) !== null ? "<a href=\""+bd["url"]+"\" target=\"_blank\">"+bd["url"]+"</a>" : " -- ";
 				labeled.push(['URL', xurl]);
 				if ( ns(bd["username"]) !== null || ns(bd["password"]) !== null ) {
 					labeled.push(["Username", es(bd["username"])]);
@@ -163,7 +164,7 @@
 			window.history.pushState("contact", "persona.l_name",
 				"/contacts/contact/"+persona[0].id);
 
-			var detdiv = $("#contact_detail");
+			var detdiv = $("#preview_content");
 			detdiv.empty();
 
 			var es = function(x) { return (x === null) ? "" : x; };
@@ -180,37 +181,29 @@
 			bits.forEach(function(elt) {
 				detdiv.append("<p>"+bit_html(elt)+"</p>");
 			});
+
+			active_preview = persona[0].id;
+			resize_event();
 		}
 
 		function show_contact_error(xx) {
-			var detdiv = $("#contact_detail");
+			var detdiv = $("#preview_content");
 			detdiv.empty();
 
 			detdiv.html("<p>error getting contact</p>");
 		}
 
-		function resize_event() {
-			var char_width = parseFloat($("html").css("font-size"));
-			var w = $(window).width() / char_width;
-			if( w < 40 ) {
-				// console.log("resizing skinny -- "+w);
-				$("#search_wrapper")
-					.removeClass("search_results2_wide")
-					.addClass("search_results2_narrow");
-				$("#contact_detail")
-					.removeClass("row_detail_wide")
-					.addClass("row_detail_narrow");
-			} else {
-				// console.log("resizing wide -- "+w);
-				$("#search_wrapper")
-					.removeClass("search_results2_narrow")
-					.addClass("search_results2_wide");
-				$("#contact_detail")
-					.removeClass("row_detail_narrow")
-					.addClass("row_detail_wide");
-			}
+		function back_to_search() {
+			window.history.pushState("contacts.search", "Contact Search",
+				"/contacts/contacts");
+
+			active_preview = null;
+			resize_event();
 		}
 
+		function resize_event() {
+			list_preview_resize_event();
+		}
 	</script>
 	<style>
 	.tab_div {
@@ -251,7 +244,7 @@
 </div>
 
 <div class="multipane_body">
-	<div class="search_results2" id="search_wrapper">
+	<div class="search_results2_narrow" id="search_wrapper">
 		<form onsubmit="return search_submit();">
 		<table class="search">
 			<tr>
@@ -269,7 +262,11 @@
 		</div>
 	</div>
 
-	<div class="row_detail" id="contact_detail">
+	<div class="row_detail_suppressed" id="preview_detail">
+		<a href="#" class="search_back" id="search_back" onClick="back_to_search()">&lt;&lt; Back to Search</a>
+
+		<div id="preview_content">
+		</div>
 	</div>
 </div>
 

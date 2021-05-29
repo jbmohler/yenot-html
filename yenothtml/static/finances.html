@@ -31,11 +31,12 @@
 	<script src="/static/rtx.js"></script>
 	<script>
 		var session = null;
-		var active_transaction = null;
+		var active_preview = null;
 		$(document).ready(function() {
 			session = rtx_session_from_token(
 				function(initialized) {
 					rtx_init_profile_menu();
+					resize_event();
 				},
 				function() {
 					window.location = "/login.html";
@@ -87,12 +88,12 @@
 			window.history.pushState("finances.transaction", "Transaction "+tranrow.memo,
 				"/finances/transaction/"+tranrow.tid);
 
-			active_transaction = tranrow.tid;
+			active_preview = tranrow.tid;
 			resize_event();
 		}
 
 		function show_transaction_error(xx) {
-			var detdiv = $("#transaction_detail");
+			var detdiv = $("#preview_detail");
 			detdiv.empty();
 
 			detdiv.html("<p>error getting transaction</p>");
@@ -102,50 +103,12 @@
 			window.history.pushState("finances.transaction", "Transaction Search",
 				"/finances/transactions");
 
-			active_transaction = null;
+			active_preview = null;
 			resize_event();
 		}
 
 		function resize_event() {
-			var char_width = parseFloat($("html").css("font-size"));
-			var w = $(window).width() / char_width;
-			if( w < 40 && active_transaction !== null ) {
-				//console.log("resizing skinny -- "+w+"; showing active_transaction");
-				$("#search_wrapper")
-					.removeClass("search_results2_wide")
-					.removeClass("search_results2_narrow")
-					.addClass("search_results2_suppressed");
-				$("#transaction_detail")
-					.removeClass("row_detail_wide")
-					.addClass("row_detail_narrow");
-				$("#search_back")
-					.removeClass("search_back")
-					.addClass("search_back_scoop");
-			} else if( w < 40 && active_transaction === null ) {
-				//console.log("resizing skinny -- "+w+"; null active_transaction");
-				$("#search_wrapper")
-					.removeClass("search_results2_wide")
-					.removeClass("search_results2_suppressed")
-					.addClass("search_results2_narrow");
-				$("#transaction_detail")
-					.removeClass("row_detail_wide")
-					.addClass("row_detail_narrow");
-				$("#search_back")
-					.removeClass("search_back")
-					.addClass("search_back_scoop");
-			} else {
-				//console.log("resizing wide -- "+w);
-				$("#search_wrapper")
-					.removeClass("search_results2_narrow")
-					.removeClass("search_results2_suppressed")
-					.addClass("search_results2_wide");
-				$("#transaction_detail")
-					.removeClass("row_detail_narrow")
-					.addClass("row_detail_wide");
-				$("#search_back")
-					.removeClass("search_back_scoop")
-					.addClass("search_back");
-			}
+			list_preview_resize_event();
 		}
 	</script>
 	<style>
@@ -187,7 +150,7 @@
 </div>
 
 <div class="multipane_body">
-	<div class="search_results2" id="search_wrapper">
+	<div class="search_results2_narrow" id="search_wrapper">
 		<form onsubmit="return search_submit();">
 		<table class="search">
 			<tr>
@@ -205,7 +168,7 @@
 		</div>
 	</div>
 
-	<div class="row_detail" id="transaction_detail">
+	<div class="row_detail_suppressed" id="preview_detail">
 		<a href="#" class="search_back" id="search_back" onClick="back_to_search()">&lt;&lt; Back to Search</a>
 
 		<p>

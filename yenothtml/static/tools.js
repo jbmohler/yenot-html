@@ -42,6 +42,62 @@ function myFunction() {
 	}
 }
 
+function list_preview_resize_event() {
+	// TODO:  make this a class to clean up the data dependencies
+	// "global" -- active_preview
+
+	var char_width = parseFloat($("html").css("font-size"));
+	var w = $(window).width() / char_width;
+
+	if( w < 40 ) {
+		$("#search_back")
+			.removeClass("search_back")
+			.addClass("search_back_scoop");
+	} else if( active_preview === null ) {
+		$("#search_back")
+			.removeClass("search_back_scoop")
+			.addClass("search_back");
+	}
+
+	if( active_preview === null ) {
+		$("#preview_detail")
+			.removeClass("row_detail_narrow")
+			.removeClass("row_detail_wide")
+			.addClass("row_detail_suppressed");
+	} else {
+		if( w < 40 ) {
+			$("#preview_detail")
+				.removeClass("row_detail_wide")
+				.removeClass("row_detail_suppressed")
+				.addClass("row_detail_narrow");
+		} else {
+			$("#preview_detail")
+				.removeClass("row_detail_narrow")
+				.removeClass("row_detail_suppressed")
+				.addClass("row_detail_wide");
+		}
+	}
+
+	if( w < 40 ) {
+		if ( active_preview !== null ) {
+			$("#search_wrapper")
+				.removeClass("search_results2_wide")
+				.removeClass("search_results2_narrow")
+				.addClass("search_results2_suppressed");
+		} else {
+			$("#search_wrapper")
+				.removeClass("search_results2_wide")
+				.removeClass("search_results2_suppressed")
+				.addClass("search_results2_narrow");
+		}
+	} else {
+		$("#search_wrapper")
+			.removeClass("search_results2_narrow")
+			.removeClass("search_results2_suppressed")
+			.addClass("search_results2_wide");
+	}
+}
+
 
 // roscoe client helpers
 //

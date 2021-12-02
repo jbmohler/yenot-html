@@ -2,9 +2,9 @@
 //
 
 function titleCase(str) {
-	  return str.toLowerCase().split(' ').map(function(word) {
-		      return word.replace(word[0], word[0].toUpperCase());
-		    }).join(' ');
+	return str.toLowerCase().split(' ').map(function(word) {
+		return word.replace(word[0], word[0].toUpperCase());
+	}).join(' ');
 }
 
 function rtx_column_label(prelt)
@@ -209,32 +209,29 @@ function RtxServer(baseurl)
 		_this.baseurl = _this.baseurl + '/';
 	}
 
-	this.login = function(username, password, success, error)
+	this.login = function(username, password, success, failure)
 	{
 		function login_response(data, textStatus, jqXHR){
-			if( jqXHR.status == 200 ){
-				sessionStorage.rtx_access_token = data.access_token;
-				sessionStorage.rtx_userid = data.userid;
-				sessionStorage.rtx_username = data.username;
+			sessionStorage.rtx_access_token = data.access_token;
+			sessionStorage.rtx_userid = data.userid;
+			sessionStorage.rtx_username = data.username;
 
-				var flags = { path: '/', samesite: "strict" };
-				$.cookie("rtx_prefix", _this.baseurl, flags);
+			var flags = { path: '/', samesite: "strict" };
+			$.cookie("rtx_prefix", _this.baseurl, flags);
 
-				_this.access_token = data.access_token;
-				_this.rtx_userid = data.userid;
-				_this.rtx_username = data.username;
+			_this.access_token = data.access_token;
+			_this.rtx_userid = data.userid;
+			_this.rtx_username = data.username;
 
-				success();
-			}else{
-				alert(data.status);
-			}
+			success();
 		}
 
 		$.ajax({
 			type: 'POST',
 			url: this.baseurl+'api/session',
 			data: {username: username, password: password},
-			success: login_response
+			success: login_response,
+			error: failure
 		})
 	}
 
@@ -245,26 +242,27 @@ function RtxServer(baseurl)
 			failure();
 
 		function login_response(data, textStatus, jqXHR){
-			if( jqXHR.status == 200 ){
-				_this.access_token = data.access_token;
-				_this.rtx_userid = data.userid;
-				_this.rtx_username = data.username;
+			_this.access_token = data.access_token;
+			_this.rtx_userid = data.userid;
+			_this.rtx_username = data.username;
 
-				var flags = { path: '/', samesite: "strict" };
-				$.cookie("rtx_prefix", _this.baseurl, flags);
+			var flags = { path: '/', samesite: "strict" };
+			$.cookie("rtx_prefix", _this.baseurl, flags);
 
-				success(_this);
-			}else{
-				alert(data.status);
-			}
+			success(_this);
+		}
+
+		function my_error(data, textStatus, jqXHR){
+			failure();
 		}
 
 		$.ajax({
 			type: 'POST',
 			url: this.baseurl+'api/session',
 			data: {username: username, device_token: localStorage.rtx_devtoken},
-			success: login_response
-		})
+			success: login_response,
+			error: my_error
+		});
 	}
 
 	this.login_pin = function(username, pin, success, error)

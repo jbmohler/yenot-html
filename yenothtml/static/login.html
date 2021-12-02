@@ -38,6 +38,9 @@
 					} else {
 						authenticate();
 					}
+				},
+				function() {
+					$("#login_status").html("Login Error");
 				}
 			);
 			return false;
@@ -51,24 +54,29 @@
 
 <div class="auth">
 
-<form action="/dne" onsubmit="return my_login();">
-    <table id='credentials'>
-    <tr>
-        <td>Username:</td>
-        <td><input type="text" id="username" name="username" /></td>
-    </tr>
-    <tr>
-        <td>Password:</td>
-        <td><input type="password" id="password" name="password" /></td>
-    </tr>
-    <tr>
+<form action="/dne" method="post" onsubmit="return my_login();">
+	<table id='credentials'>
+	<tr>
+		<td>Username:</td>
+		<td><input type="text" id="username" name="username" /></td>
+	</tr>
+	<tr>
+		<td>Password:</td>
+		<td><input type="password" id="password" name="password" /></td>
+	</tr>
+	<tr>
 		<td colspan="2">
 			<input type="checkbox" id="save-device-login" name="save-device-login" value="save" />
 			<label for="save-device-login">Remember this login on this device</label>
 		</td>
-        <td><input type="submit" value="Login" /></td>
-    </tr>
-    </table>
+		<td><input type="submit" value="Login" /></td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<div id="login_status" style="color: red"></div>
+		</td>
+	</tr>
+	</table>
 </form>
 </div>
 

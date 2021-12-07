@@ -17,11 +17,11 @@ function rtx_column_label(prelt)
 
 function jsGrid_columns(columns)
 {
-	function listconcat(value, item){
+	function listconcat(value, item) {
 		return value.join('; ');
 	}
 	var currency_format = new Intl.NumberFormat("en-US", {minimumFractionDigits: 2});
-	function format_currency(value, item){
+	function format_currency(value, item) {
 		return currency_format.format(value);
 	}
 	function gtype(cc)
@@ -41,8 +41,8 @@ function jsGrid_columns(columns)
 		return {"type": "text"}
 	}
 
-	var grcol = columns.filter(function (cc){
-		if( cc[1] === null ){
+	var grcol = columns.filter(function (cc) {
+		if( cc[1] === null ) {
 			return true;
 		} else if( cc[1].hidden !== undefined && cc[1].hidden ) {
 			return false;
@@ -50,7 +50,7 @@ function jsGrid_columns(columns)
 			return false;
 		}
 		return true;
-	}).map(function (cc){
+	}).map(function (cc) {
 		var gt = gtype(cc);
 		return {
 			name: cc[0],
@@ -137,7 +137,6 @@ function rtx_session_no_auth(initialized)
 	var session = RtxServer(root);
 
 	var dt = localStorage.rtx_devtoken;
-	var access_token = sessionStorage.rtx_access_token;
 	if( dt !== undefined) {
 		session.login_saved(initialized, initialized);
 	}
@@ -155,18 +154,23 @@ function rtx_session_from_token(success, failure)
 
 	var session = RtxServer(root);
 
-	var dt = localStorage.rtx_devtoken;
-	var access_token = sessionStorage.rtx_access_token;
-	if( dt !== undefined) {
-		session.login_saved(success, failure);
-	} else if ( access_token !== undefined ) {
-		session.access_token = sessionStorage.rtx_access_token;
-		// should verify the session id is still valid??
+	function ref_success() {
 		success(session);
 	}
-	else {
-		window.location = "/login.html";
+
+	function ref_error() {
+		console.log("alsjf");
+		var dt = localStorage.rtx_devtoken;
+		if( dt !== undefined) {
+			console.log("loging in with saved device token");
+			session.login_saved(success, failure);
+		} else {
+			window.location = "/login.html";
+		}
 	}
+
+	session.session_refresh(ref_success, ref_error);
+
 
 	return session;
 }
@@ -200,26 +204,25 @@ function rtx_init_profile_menu() {
 	$("#rtx_logout").click(user_logout);
 }
 
-function RtxServer(baseurl)
-{
+function RtxServer(baseurl) {
 	var _this = this;
 	_this.baseurl = baseurl;
 	_this.step2fa = false;
-	if( _this.baseurl.slice(-1) != '/'){
+	_this.authenticated = false;
+	// we know the server expiration is 60 minutes
+	_this.refresh_minutes = 45;
+	if( _this.baseurl.slice(-1) != '/') {
 		_this.baseurl = _this.baseurl + '/';
 	}
 
-	this.login = function(username, password, success, failure)
-	{
-		function login_response(data, textStatus, jqXHR){
-			sessionStorage.rtx_access_token = data.access_token;
+	this.login = function(username, password, success, failure) {
+		function login_response(data, textStatus, jqXHR) {
 			sessionStorage.rtx_userid = data.userid;
 			sessionStorage.rtx_username = data.username;
 
-			var flags = { path: '/', samesite: "strict" };
-			$.cookie("rtx_prefix", _this.baseurl, flags);
+			_this.refresh_timer = setInterval(_this.session_refresh, self.refresh_minutes*60*1000);
 
-			_this.access_token = data.access_token;
+			_this.authenticated = true;
 			_this.rtx_userid = data.userid;
 			_this.rtx_username = data.username;
 
@@ -241,18 +244,17 @@ function RtxServer(baseurl)
 		if( dt === undefined )
 			failure();
 
-		function login_response(data, textStatus, jqXHR){
-			_this.access_token = data.access_token;
+		function login_response(data, textStatus, jqXHR) {
 			_this.rtx_userid = data.userid;
 			_this.rtx_username = data.username;
 
-			var flags = { path: '/', samesite: "strict" };
-			$.cookie("rtx_prefix", _this.baseurl, flags);
+			_this.authenticated = true;
+			_this.refresh_timer = setInterval(_this.session_refresh, self.refresh_minutes*60*1000);
 
 			success(_this);
 		}
 
-		function my_error(data, textStatus, jqXHR){
+		function my_error(data, textStatus, jqXHR) {
 			failure();
 		}
 
@@ -265,12 +267,44 @@ function RtxServer(baseurl)
 		});
 	}
 
-	this.login_pin = function(username, pin, success, error)
-	{
-		function login_response(data, textStatus, jqXHR){
+	this.session_refresh = function(rtx_success, rtx_error) {
+		var auth_prior = _this.authenticated;
+		function get_result(data, textStatus, jqXHR) {
+			// cookies updated, naught else
+			_this.authenticated = true;
+			_this.rtx_userid = data.userid;
+			_this.rtx_username = data.username;
+			if (!auth_prior) {
+				_this.refresh_timer = setInterval(_this.session_refresh, self.refresh_minutes*60*1000);
+			}
+			console.log("session refresh successful");
+			if (rtx_success) {
+				rtx_success(RtxResponse(data));
+			}
+		}
+
+		function get_error(data, textStatus, jqXHR) {
+			if (rtx_error) {
+				rtx_error(RtxResponse(data));
+			} else {
+				// TODO  check the device token
+				console.log("session refresh failed -- what to do");
+			}
+		}
+
+		$.ajax({
+			type: 'GET',
+			url: this.baseurl+"api/session/refresh",
+			headers: this.auth_headers(),
+			success: get_result,
+			error: get_error
+		})
+	}
+
+	this.login_pin = function(username, pin, success, error) {
+		function login_response(data, textStatus, jqXHR) {
 			alert(data);
-			if( jqXHR.status == 200 ){
-				_this.access_token = data.access_token;
+			if( jqXHR.status == 200 ) {
 				_this.step2fa = true;
 				success();
 			}else{
@@ -285,12 +319,12 @@ function RtxServer(baseurl)
 			success: login_response})
 	}
 
-	this.promote_2fa = function(pin, success, error)
-	{
-		function login_response(data, textStatus, jqXHR){
-			if( jqXHR.status == 200 ){
-				_this.access_token = data.access_token;
+	this.promote_2fa = function(pin, success, error) {
+		var _this = this;
+		function login_response(data, textStatus, jqXHR) {
+			if( jqXHR.status == 200 ) {
 				_this.step2fa = false;
+				_this.authenticated = true;
 				success();
 			}else{
 				alert(data.status);
@@ -300,14 +334,13 @@ function RtxServer(baseurl)
 		$.ajax({
 			type: 'POST',
 			url: this.baseurl+'api/session/promote-2fa',
-			headers: {'Authorization': 'Bearer ' + this.access_token},
 			data: {pin2: pin},
 			success: login_response
 		})
 	}
 
-	this.logout = function()
-	{
+	this.logout = function() {
+		var _this = this;
 		// also nix the device-token if here
 		var dt = localStorage.rtx_devtoken;
 		if( dt !== undefined ) {
@@ -316,16 +349,15 @@ function RtxServer(baseurl)
 			localStorage.removeItem("rtx_username");
 		}
 
-		function logout_response(data, textStatus, jqXHR){
-			if( jqXHR.status == 200 ){
+		function logout_response(data, textStatus, jqXHR) {
+			if( jqXHR.status == 200 ) {
 				console.log("logged out");
 
 				sessionStorage.removeItem("rtx_username");
 				sessionStorage.removeItem("rtx_userid");
-				sessionStorage.removeItem("rtx_access_token");
 
-				_this.access_token = null;
-
+				_this.authenticated = false;
+				clearInterval(_this.refresh_timer);
 				window.location = "/login.html";
 			}else{
 				alert(data.status);
@@ -335,14 +367,12 @@ function RtxServer(baseurl)
 		$.ajax({
 			type: 'PUT',
 			url: this.baseurl+'api/session/logout',
-			headers: {'Authorization': 'Bearer ' + this.access_token},
 			success: logout_response
 		})
 	}
 
 	this.auth_headers = function() {
 		return {
-			'Authorization': 'Bearer ' + this.access_token,
 			'X-Yenot-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
 		}
 	}
@@ -361,14 +391,17 @@ function RtxServer(baseurl)
 		)
 	}
 
-	this.get = function(tail, params, rtx_success, rtx_error){
-
-		function get_result(data, textStatus, jqXHR){
+	this.get = function(tail, params, rtx_success, rtx_error) {
+		function get_result(data, textStatus, jqXHR) {
 			rtx_success(RtxResponse(data));
 		}
 
-		function get_error(data, textStatus, jqXHR){
-			rtx_error(RtxResponse(data));
+		function get_error(data, textStatus, jqXHR) {
+			if (rtx_error) {
+				rtx_error(RtxResponse(data));
+			} else {
+				console.log("Received an error "+textStatus+" from endpoint "+tail);
+			}
 		}
 
 		//console.log("*** "+tail+" ***");
@@ -384,14 +417,17 @@ function RtxServer(baseurl)
 		})
 	}
 
-	this.put = function(tail, params, data, rtx_success, rtx_error)
-	{
-		function get_result(data, textStatus, jqXHR){
+	this.put = function(tail, params, data, rtx_success, rtx_error) {
+		function get_result(data, textStatus, jqXHR) {
 			rtx_success(RtxResponse(data));
 		}
 
-		function get_error(data, textStatus, jqXHR){
-			rtx_error(RtxResponse(data));
+		function get_error(data, textStatus, jqXHR) {
+			if (rtx_error) {
+				rtx_error(RtxResponse(data));
+			} else {
+				console.log("Received an error "+textStatus+" from endpoint "+tail);
+			}
 		}
 
 		$.ajax({
@@ -404,14 +440,17 @@ function RtxServer(baseurl)
 		})
 	}
 
-	this.post = function(tail, params, data, rtx_success, rtx_error)
-	{
-		function get_result(data, textStatus, jqXHR){
+	this.post = function(tail, params, data, rtx_success, rtx_error) {
+		function get_result(data, textStatus, jqXHR) {
 			rtx_success(RtxResponse(data));
 		}
 
-		function get_error(data, textStatus, jqXHR){
-			rtx_error(RtxResponse(data));
+		function get_error(data, textStatus, jqXHR) {
+			if (rtx_error) {
+				rtx_error(RtxResponse(data));
+			} else {
+				console.log("Received an error "+textStatus+" from endpoint "+tail);
+			}
 		}
 
 		$.ajax({
@@ -424,14 +463,17 @@ function RtxServer(baseurl)
 		})
 	}
 
-	this.delete = function(tail, params, data, rtx_success, rtx_error)
-	{
-		function get_result(data, textStatus, jqXHR){
+	this.delete = function(tail, params, data, rtx_success, rtx_error) {
+		function get_result(data, textStatus, jqXHR) {
 			rtx_success(RtxResponse(data));
 		}
 
-		function get_error(data, textStatus, jqXHR){
-			rtx_error(RtxResponse(data));
+		function get_error(data, textStatus, jqXHR) {
+			if (rtx_error) {
+				rtx_error(RtxResponse(data));
+			} else {
+				console.log("Received an error "+textStatus+" from endpoint "+tail);
+			}
 		}
 
 		$.ajax({

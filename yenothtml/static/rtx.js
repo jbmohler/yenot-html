@@ -220,7 +220,7 @@ function RtxServer(baseurl) {
 			sessionStorage.rtx_userid = data.userid;
 			sessionStorage.rtx_username = data.username;
 
-			_this.refresh_timer = setInterval(_this.session_refresh, self.refresh_minutes*60*1000);
+			_this.refresh_timer = setInterval(_this.session_refresh, _this.refresh_minutes*60*1000);
 
 			_this.authenticated = true;
 			_this.rtx_userid = data.userid;
@@ -249,7 +249,7 @@ function RtxServer(baseurl) {
 			_this.rtx_username = data.username;
 
 			_this.authenticated = true;
-			_this.refresh_timer = setInterval(_this.session_refresh, self.refresh_minutes*60*1000);
+			_this.refresh_timer = setInterval(_this.session_refresh, _this.refresh_minutes*60*1000);
 
 			success(_this);
 		}
@@ -275,7 +275,7 @@ function RtxServer(baseurl) {
 			_this.rtx_userid = data.userid;
 			_this.rtx_username = data.username;
 			if (!auth_prior) {
-				_this.refresh_timer = setInterval(_this.session_refresh, self.refresh_minutes*60*1000);
+				_this.refresh_timer = setInterval(_this.session_refresh, _this.refresh_minutes*60*1000);
 			}
 			console.log("session refresh successful");
 			if (rtx_success) {

@@ -121,7 +121,12 @@
 		}
 
 		function run_report(selrpt){
-			session.get(selrpt.url, null, load_report);
+			session.get(selrpt.url, null, load_report, show_error);
+		}
+
+		function show_error(error){
+			var grid = $("#preview-grid");
+			grid.html("You got an error "+error.keys()['error-msg']);
 		}
 
 		function load_report(content){

@@ -51,19 +51,29 @@
 				return;
 			}
 
+			var url = new URL(window.location.href);
+
 			var xx = pathtail.match(/^contact\/([-a-z0-9]*)$/);
 			if( xx !== null ) {
 				session.get("api/persona/"+xx[1],
 					null, show_contact_details, show_contact_error);
 			}
 
-			var xx = pathtail.match(/^search\/([-a-z0-9]*)$/);
+			var xx = pathtail.match(/^search/);
+			if( xx !== null && url.searchParams.get("query") !== null ) {
+				$("#contact_bit").val(url.searchParams.get("query"));
+				search_submit();
+			}
 		}
 
 		function search_submit() {
 			params = {frag: $("#contact_bit").val()}
-			session.get("api/personas/list", params, show_contact_list);
+			session.get("api/personas/list", params, show_contact_list, search_error);
 			return false;
+		}
+
+		function search_error() {
+			console.log("got error on search");
 		}
 
 		function show_contact_list(content) {

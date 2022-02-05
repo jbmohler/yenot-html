@@ -344,7 +344,7 @@ function RtxServer(baseurl) {
 		// also nix the device-token if here
 		var dt = localStorage.rtx_devtoken;
 		if( dt !== undefined ) {
-			this.delete("api/user/" + this.rtx_userid + "/device-token/" + dt);
+			this.delete("api/user/me/device-token/" + dt);
 			localStorage.removeItem("rtx_devtoken");
 			localStorage.removeItem("rtx_username");
 		}
@@ -378,7 +378,7 @@ function RtxServer(baseurl) {
 	}
 
 	this.save_device_token = function(success) {
-		this.post("api/user/" + this.rtx_userid + "/device-token/new",
+		this.post("api/user/me/device-token/new",
 			null,
 			{"device_name": navigator.userAgent},
 			function(rtx_data) {

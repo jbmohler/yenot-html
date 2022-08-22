@@ -76,7 +76,7 @@ function rtx_table_helper(cols, rows)
 		var obj = {}
 		for(var i=0; i<colcount; ++i)
 		{
-			obj[colnames[i]] = rows[j][i];
+			obj[colnames[i]] = rows[j][colnames[i]];
 		}
 		results.push(obj);
 	}
@@ -106,7 +106,7 @@ function RtxResponse(content)
 	this.table = function(name)
 	{
 		t = this.payload[name];
-		return rtx_table_helper(t[0], t[1]);
+		return rtx_table_helper(t.columns, t.data);
 	}
 
 	this.main_table_columns = function()
@@ -117,7 +117,7 @@ function RtxResponse(content)
 	this.table_columns = function(name)
 	{
 		t = this.payload[name];
-		return t[0];
+		return t.columns;
 	}
 
 	this.keys = function()
